@@ -3,7 +3,7 @@
 // =============================
 // 1. Crée la figure principale (la fenêtre de l'interface)
 funcprot(0);
-global img;
+global image;
 global new_frame;
 global nom_fichier;
 
@@ -245,14 +245,14 @@ detection_contour = uicontrol(f, ...
 // =============================
 // Fonction utilitaire : afficher une image dans un frame
 function importer_image()
-    global img;
+    global image;
     global nom_fichier;
     global frame_image;
     global new_frame;
     
-    [file, path] = uigetfile(["*.png"; "*.jpg"; "*.bmp"; "*.tif"; "*.jpeg"], "Choisir une image");
+    [file, path] = uigetfile(["*.png"; "*.jpeg"; "*.bmp"; "*.tif"; "*.jpg"], "Choisir une image");
     if file <> "" then
-        img = imread(path + "/" + file);
+        image = imread(path + "/" + file);
         nom_fichier = file;
         
         // Supprimer le frame décoratif
@@ -263,7 +263,7 @@ function importer_image()
         new_frame.axes_bounds = [0.01, 0.09, 0.60, 0.80]; // adapte à ta zone
         
         // Afficher l’image
-        imshow(img);
+        imshow(image);
         new_frame.axes_visible = "off"; // enlever les graduations
         
         // Ajouter un titre
@@ -276,12 +276,22 @@ function importer_image()
     end
 endfunction
 
-
-
-        
 function sauvegarder_image()
-    // Cette fonction sera complétée plus tard
-    messagebox("Sauvegarde en cours...", "Info");
+    global image;
+    global nom_fichier;
+    
+    if exists("img") then
+        // Choisir un nom de fichier de sortie
+        [file, path] = uiputfile(["*.png"; "*.jpeg"; "*.bmp"; "*.tif"; "*.jpg"]], "Enregistrer l''image sous...");
+        if file <> "" then
+            imwrite(image, path + "/" + file);
+            messagebox("Image sauvegardée : " + file, "Information");
+        else
+            messagebox("Sauvegarde annulée.", "Information");
+        end
+    else
+        messagebox("Aucune image à sauvegarder.", "Erreur");
+    end
 endfunction
 
 function reinitialiser_image()
@@ -290,7 +300,6 @@ function reinitialiser_image()
 endfunction
 
 function quitter()
-    // Cette fonction sera complétée plus tard
-    messagebox("Quitter en cours...", "Info");
+    close(f);
 endfunction
 
