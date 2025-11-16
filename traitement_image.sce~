@@ -250,27 +250,30 @@ function importer_image()
     global frame_image;
     global new_frame;
     
-    [file, path] = uigetfile(["*.png"; "*.jpg"; "*.bmp"; "*.tif"; "*.jpeg"], "Choisir une image");
+    [file, path] = uigetfile(["*.png"; "*.jpg"; "*.jpeg"; "*.bmp"; "*.tif"], "Choisir une image");
     if file <> "" then
         img = imread(path + "/" + file);
         nom_fichier = file;
         
+        // Sauvegarder la position du frame AVANT de le supprimer
+        pos = frame_image.position; // [x, y, largeur, hauteur]
+        
         // Supprimer le frame décoratif
         delete(frame_image);
         
-        // Créer un nouvel axe pour afficher l'image
-        new_frame = gca();
-        new_frame.axes_bounds = [0.03, 0.17, 0.78, 0.7]; // adapte à ta zone
+        // Taille de la figure
+        fig_pos = get(f, "figure_position"); // [x, y, largeur, hauteur]
+        fig_width  = fig_pos(3);
+        fig_height = fig_pos(4);
         
-        // Afficher l’image
-        imshow(img);
-        new_frame.axes_visible = "off"; // enlever les graduations
+        // Créer un axe exactement à la place du frame
+        new_frame = newaxes();
+        new_frame.axes_bounds = [pos(1)/fig_width, pos(2)/fig_height, ...
+                                   pos(3)/fig_width, pos(4)/fig_height];
         
-        // Ajouter un titre
-        title("Image importée : " + file, "fontsize", 3);
-        
-        // Remettre la fenêtre principale au premier plan
-        figure(f);
+        // Afficher l’image dans cet axe
+        imshow(img, new_frame);
+        axes_handle.axes_visible = "off"; // enlever les graduations
     else
         messagebox("Aucune image sélectionnée.", "Information");
     end
