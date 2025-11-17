@@ -11,8 +11,9 @@ f = figure("name", "Interface Traitement d''Image", ...
            "position", [100, 200, 1000, 600]); // [x_départ, y_départ, largeur, hauteur]
            
 // Zone d’affichage
+frame_position=[30, 100, 790, 530];
 frame_image = uicontrol(f, "style","frame", ...
-            "position",[30, 100, 790, 530], ...
+            "position",frame_position, ...
             "BackgroundColor", [1 1 1]);
                         
 // 2. Ajoute le titre "Projet Traitement d'image" en haut
@@ -252,37 +253,25 @@ function importer_image()
     
     [file, path] = uigetfile(["*.png"; "*.jpeg"; "*.bmp"; "*.tif"; "*.jpg"], "Choisir une image");
     if file <> "" then
-        image = imread(path + "/" + file);
+        chemin_fichier = path + filesep() + file;
+        image = imread(chemin_fichier);
         nom_fichier = file;
-        
-        // Supprimer le frame décoratif
-        delete(frame_image);
-        
-        // Créer un nouvel axe pour afficher l'image
-        new_frame = gca();
-        new_frame.axes_bounds = [0.01, 0.09, 0.60, 0.80]; // adapte à ta zone
-        
-        // Afficher l’image
-        imshow(image);
-        new_frame.axes_visible = "off"; // enlever les graduations
-        
-        // Ajouter un titre
-        title("Image importée : " + file, "fontsize", 3);
-        
-        // Remettre la fenêtre principale au premier plan
-        figure(f);
+        afficher_image(chemin_fichier);
     else
         messagebox("Aucune image sélectionnée.", "Information");
     end
 endfunction
-
+function afficher_image(filepath)
+    global frame_position;
+    uicontrol('style', 'image', 'string', filepath, 'position', frame_position);
+endfunction
 function sauvegarder_image()
     global image;
     global nom_fichier;
     
     if exists("img") then
         // Choisir un nom de fichier de sortie
-        [file, path] = uiputfile(["*.png"; "*.jpeg"; "*.bmp"; "*.tif"; "*.jpg"]], "Enregistrer l''image sous...");
+        [file, path] = uiputfile(["*.png"; "*.jpeg"; "*.bmp"; "*.tif"; "*.jpg"], "Enregistrer l''image sous...");
         if file <> "" then
             imwrite(image, path + "/" + file);
             messagebox("Image sauvegardée : " + file, "Information");
