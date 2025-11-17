@@ -3,19 +3,23 @@
 // =============================
 // 1. Crée la figure principale (la fenêtre de l'interface)
 funcprot(0);
-global image;
+
 global new_frame;
-global nom_fichier;
+nom_fichier = "fichier_encours_scilab.jpg";
+nom_fichier_initial = "fichier_initial_scilab.jpg";
+global image;
+try
+    image = imread(nom_fichier_initial);
+catch
+   
+end
 
 f = figure("name", "Interface Traitement d''Image", ...
            "position", [100, 200, 1000, 600]); // [x_départ, y_départ, largeur, hauteur]
            
 // Zone d’affichage
 frame_position=[30, 100, 790, 530];
-frame_image = uicontrol(f, "style","frame", ...
-            "position",frame_position, ...
-            "BackgroundColor", [1 1 1]);
-                        
+frame_image = uicontrol('style', 'image', 'string',nom_fichier , 'position', frame_position);
 // 2. Ajoute le titre "Projet Traitement d'image" en haut
 titre = uicontrol(f, ...
                   "style", "text", ...
@@ -57,7 +61,7 @@ btn_reinitialiser = uicontrol(f, ...
     "foregroundcolor", [1 1 1], ...       // blanc
     "backgroundcolor", [0.2, 0.7, 0.3], ... // bleu
     "position", [600, 650, 220, 45], ...
-    "callback", "reinitialiser_image()");
+    "callback", "re_intiailiser_image()");
 
 // .6 Créer un bouton pour quitter une image
 btn_quitter = uicontrol(f, ...
@@ -159,7 +163,7 @@ flou_gaussien = uicontrol(f, ...
     "fontweight", "bold", ...
     "foregroundcolor", [0.8 0.8 0.8], ...  // texte gris clair
     "backgroundcolor", [0 0 0], ...        // fond noir
-    "position", [1080, 510, 210, 25]);
+    "position", [1080, 510, 210, 25],"callback", "flou_gaussien_callback()");
     
 // 16. Créer un bouton Flou médiane
 flou_median = uicontrol(f, ...
@@ -247,48 +251,51 @@ detection_contour = uicontrol(f, ...
 // Fonction utilitaire : afficher une image dans un frame
 function importer_image()
     global image;
-    global nom_fichier;
     global frame_image;
     global new_frame;
-    
+    global nom_fichier_initial;
     [file, path] = uigetfile(["*.png"; "*.jpeg"; "*.bmp"; "*.tif"; "*.jpg"], "Choisir une image");
     if file <> "" then
-        chemin_fichier = path + filesep() + file;
-        image = imread(chemin_fichier);
-        nom_fichier = file;
-        afficher_image(chemin_fichier);
+        fichier = path + filesep() + file;
+        image = imread(fichier);
+        imwrite(image, nom_fichier_initial);
+        imwrite(image, nom_fichier);
+        afficher_image();
     else
         messagebox("Aucune image sélectionnée.", "Information");
     end
 endfunction
-function afficher_image(filepath)
-    global frame_position;
-    uicontrol('style', 'image', 'string', filepath, 'position', frame_position);
+function re_intiailiser_image()
+     global nom_fichier_initial;
+     global nom_fichier;
+     image = imread(nom_fichier_initial);
+     enregistrer_image(image);
+     afficher_image();
 endfunction
-function sauvegarder_image()
-    global image;
+function enregistrer_charger(new_image)
+    enregistrer_image(new_image);
+    afficher_image();
+endfunction
+function enregistrer_image(new_image)
     global nom_fichier;
-    
-    if exists("img") then
-        // Choisir un nom de fichier de sortie
-        [file, path] = uiputfile(["*.png"; "*.jpeg"; "*.bmp"; "*.tif"; "*.jpg"], "Enregistrer l''image sous...");
-        if file <> "" then
-            imwrite(image, path + "/" + file);
-            messagebox("Image sauvegardée : " + file, "Information");
-        else
-            messagebox("Sauvegarde annulée.", "Information");
-        end
-    else
-        messagebox("Aucune image à sauvegarder.", "Erreur");
-    end
+    global image;
+    imwrite(new_image, nom_fichier);
+    image = new_image;
 endfunction
-
+function afficher_image()
+    uicontrol('style', 'image', 'string', nom_fichier, 'position', frame_position);
+endfunction
+function flou_gaussien_callback()
+    global image;
+     h = fspecial("gaussian", [5 5], 1);
+     new_image = imfilter(image, h);
+   // new_image = rgb2gray(image);
+    enregistrer_charger(new_image);
+endfunction
 function reinitialiser_image()
     // Cette fonction sera complétée plus tard
     messagebox("Réinitialiser en cours...", "Info");
 endfunction
-
 function quitter()
     close(f);
 endfunction
-
